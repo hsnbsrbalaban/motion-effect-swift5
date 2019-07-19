@@ -84,11 +84,12 @@ class DrawableImageView: UIView {
         for point in pathPoints {
             path?.addLine(to: point)
         }
-        //if the drawing is finished, close the path and start line animations
+        //start line animations
+        animateDashedLayer()
+        //if the drawing is finished, close the path
         if !isDrawing {
             path?.close()
             dashedLayer.path = path?.cgPath
-            animateDashedLayer()
         } else {
             dashedLayer.path = path?.cgPath
         }
@@ -200,7 +201,7 @@ class DrawableImageView: UIView {
         
         if motionState == .drawing {
             //draw the touched point
-            pathPoints.append(location)
+            pathPoints.append(appendPoint(location: location))
             self.setNeedsDisplay()
             //preview the touched point
             self.delegate.previewTheTouchedPoint(touch: touch)
@@ -221,7 +222,7 @@ class DrawableImageView: UIView {
         if motionState == .drawing {
             
             if distance(location, pathPoints.first!) > 50 {
-                self.delegate.createScissorView(location: location)
+                self.delegate.createScissorView(location: appendPoint(location: location))
                 return
             }
             
@@ -229,7 +230,7 @@ class DrawableImageView: UIView {
             //close the path
             isDrawing = false
             //draw the touched point
-            pathPoints.append(location)
+            pathPoints.append(appendPoint(location: location))
             self.setNeedsDisplay()
             //remove the preview's image
             self.delegate.removePreviewImage()
@@ -241,11 +242,37 @@ class DrawableImageView: UIView {
         }
         
         touchPoints.append(location)
-        
-//        print("first: \(String(describing: touchPoints.first)) \nlast: \(String(describing: touchPoints.last))")
     }
     
     func distance(_ a: CGPoint, _ b: CGPoint) -> Float {
         return hypotf(Float(a.x - b.x), Float(a.y - b.y))
+    }
+    
+    func appendPoint(location: CGPoint) -> CGPoint{
+        guard let imageView = imageView else {return CGPoint(x: 0, y: 0)}
+        
+        var correctPoint = location
+        
+        if imageView.frame.contains(location) {
+            return location
+        } else {
+            if location.x >= imageView.frame.minX && location.x <= imageView.frame.maxX &&
+                location.y <= imageView.frame.minY {
+                correctPoint = CGPoint(x: location.x, y: 0)
+            }
+            else if location.x >= imageView.frame.minX && location.x <= imageView.frame.maxX &&
+                location.y >= imageView.frame.maxY {
+                correctPoint = CGPoint(x: location.x, y: imageView.frame.height)
+            }
+            else if location.y >= imageView.frame.minY && location.y <= imageView.frame.maxY &&
+                location.x <= imageView.frame.minX {
+                correctPoint = CGPoint(x: 0, y: location.y)
+            }
+            else if location.y >= imageView.frame.minY && location.y <= imageView.frame.maxY &&
+                location.x >= imageView.frame.maxX {
+                correctPoint = CGPoint(x: imageView.frame.width, y: location.y)
+            }
+        }
+        return correctPoint
     }
 }

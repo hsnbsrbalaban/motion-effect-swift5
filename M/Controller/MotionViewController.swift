@@ -15,8 +15,6 @@ class MotionViewController: UIViewController {
     @IBOutlet weak var invisibleButton: UIButton!
     @IBOutlet weak var preView: UIImageView!
     
-    //TODO: - Scissor is missing
-    
     var image: UIImage!
     var drawableImageView: DrawableImageView!
     var maskedImageView: UIImageView?

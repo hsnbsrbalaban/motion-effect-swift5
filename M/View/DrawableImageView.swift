@@ -10,10 +10,13 @@ enum States {
 
 protocol DrawableImageViewDelegate {
     func createMaskedImageView(path: UIBezierPath)
-    func createMotioningViews(firstPoint: CGPoint, lastPoint: CGPoint, path: UIBezierPath)
+    func createMotioningViews(lastPoint: CGPoint)
+    func createScissorView(location: CGPoint)
     func previewTheTouchedPoint(touch: UITouch)
     func removePreviewImage()
+    func removeScissorView()
     func didTouchedOutsidePath()
+    func isScissorContainsTouch(location: CGPoint) -> Bool
 }
 
 class DrawableImageView: UIView {
@@ -23,7 +26,8 @@ class DrawableImageView: UIView {
     //MARK: - Drawing
     var dashedLayer = CAShapeLayer()
     var path: UIBezierPath?
-    var points = [CGPoint]()
+    var touchPoints = [CGPoint]()
+    var pathPoints = [CGPoint]()
     var isDrawing: Bool = false
     
     var delegate: DrawableImageViewDelegate!
@@ -70,14 +74,14 @@ class DrawableImageView: UIView {
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         //check if points array contains some points
-        if points.isEmpty {
+        if pathPoints.isEmpty {
             return
         }
         //initiliaze the path
         path = UIBezierPath()
         //draw the path by using the points inside points array
-        path?.move(to: points.first!)
-        for point in points {
+        path?.move(to: pathPoints.first!)
+        for point in pathPoints {
             path?.addLine(to: point)
         }
         //if the drawing is finished, close the path and start line animations
@@ -123,10 +127,30 @@ class DrawableImageView: UIView {
             //update the state
             motionState = .drawing
             //draw the starting point
-            points.append(location)
+            pathPoints.append(location)
             self.setNeedsDisplay()
             //preview the touched point
             self.delegate.previewTheTouchedPoint(touch: touch)
+        }
+        else if motionState == .drawing {
+            //if the user touched to scissor
+            if self.delegate.isScissorContainsTouch(location: location) {
+                //remove scissor
+                self.delegate.removeScissorView()
+            } else { //if the user touched someone else
+                //remove scissor
+                self.delegate.removeScissorView()
+                //remove the pre-created views for motioning
+                self.delegate.didTouchedOutsidePath()
+                //clear the path
+                path?.removeAllPoints()
+                pathPoints.removeAll()
+                //draw the touched point
+                pathPoints.append(location)
+                self.setNeedsDisplay()
+                //preview the touched point
+                self.delegate.previewTheTouchedPoint(touch: touch)
+            }
         }
         else if motionState == .drawed {
             //if the touched point is inside the path, update the state and stop the animations
@@ -139,9 +163,9 @@ class DrawableImageView: UIView {
                 self.delegate.didTouchedOutsidePath()
                 //clear the path
                 path?.removeAllPoints()
-                points.removeAll()
+                pathPoints.removeAll()
                 //draw the touched point
-                points.append(location)
+                pathPoints.append(location)
                 self.setNeedsDisplay()
                 //preview the touched point
                 self.delegate.previewTheTouchedPoint(touch: touch)
@@ -157,33 +181,36 @@ class DrawableImageView: UIView {
                 self.delegate.didTouchedOutsidePath()
                 //clear the path
                 path?.removeAllPoints()
-                points.removeAll()
+                pathPoints.removeAll()
                 //draw the touched point
-                points.append(location)
+                pathPoints.append(location)
                 self.setNeedsDisplay()
                 //preview the touched point
                 self.delegate.previewTheTouchedPoint(touch: touch)
             }
         }
+        touchPoints.removeAll()
+        touchPoints.append(location)
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
         //get the drawed path and the location of the touched point
-        guard let path = path, let touch = touches.first else { return }
+        guard let touch = touches.first else { return }
         let location = touch.location(in: self)
         
         if motionState == .drawing {
             //draw the touched point
-            points.append(location)
+            pathPoints.append(location)
             self.setNeedsDisplay()
             //preview the touched point
             self.delegate.previewTheTouchedPoint(touch: touch)
         }
         else if motionState == .motioning {
             //create the motion views
-            guard let firstPoint = points.first else { fatalError("Points array is empty!") }
-            self.delegate.createMotioningViews(firstPoint: firstPoint, lastPoint: location, path: path)
+            self.delegate.createMotioningViews(lastPoint: location)
         }
+        
+        touchPoints.append(location)
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -192,11 +219,17 @@ class DrawableImageView: UIView {
         let location = touch.location(in: self)
         
         if motionState == .drawing {
+            
+            if distance(location, pathPoints.first!) > 50 {
+                self.delegate.createScissorView(location: location)
+                return
+            }
+            
             motionState = .drawed
             //close the path
             isDrawing = false
             //draw the touched point
-            points.append(location)
+            pathPoints.append(location)
             self.setNeedsDisplay()
             //remove the preview's image
             self.delegate.removePreviewImage()
@@ -206,5 +239,13 @@ class DrawableImageView: UIView {
         else if motionState == .motioning {
             motionState = .motioned
         }
+        
+        touchPoints.append(location)
+        
+//        print("first: \(String(describing: touchPoints.first)) \nlast: \(String(describing: touchPoints.last))")
+    }
+    
+    func distance(_ a: CGPoint, _ b: CGPoint) -> Float {
+        return hypotf(Float(a.x - b.x), Float(a.y - b.y))
     }
 }

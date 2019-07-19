@@ -20,6 +20,7 @@ class MotionViewController: UIViewController {
     var image: UIImage!
     var drawableImageView: DrawableImageView!
     var maskedImageView: UIImageView?
+    var scissorView: UIImageView?
     
     var motionImageCount: Int = 10
     var motionImageAlpha: Int = 100
@@ -89,10 +90,14 @@ class MotionViewController: UIViewController {
     
     @IBAction func refreshButton(_ sender: UIButton) {
         
+        if scissorView != nil {
+            removeScissorView()
+        }
+        
         didTouchedOutsidePath()
         
         drawableImageView.path?.removeAllPoints()
-        drawableImageView.points.removeAll()
+        drawableImageView.pathPoints.removeAll()
         drawableImageView.dashedLayer.path = nil
         drawableImageView.setNeedsDisplay()
         
@@ -116,12 +121,22 @@ class MotionViewController: UIViewController {
                 currVal -= 1
             }
         } else {
-            //TODO: - First and Last points are wrong
-            guard let lastPoint = motionUIArray.first?.center else { return }
-            guard let firstPoint = motionUIArray.last?.center else { return }
-            
-            viewHandler(firstPoint: firstPoint, lastPoint: lastPoint, path: drawableImageView.path!, sender: "slider")
+            while Int(sender.value) != currVal {
+                let tempView = UIImageView(frame: drawableImageView.imageView!.frame)
+                tempView.image = drawableImageView.imageView!.image
+                tempView.isUserInteractionEnabled = false
+                
+                maskView(tempView: tempView, path: drawableImageView.path!)
+                
+                motionUIArray.append(tempView)
+                drawableImageView.addSubview(tempView)
+                drawableImageView.bringSubviewToFront(maskedImageView!)
+                
+                currVal += 1
+            }
         }
+        guard let lastPoint = drawableImageView.touchPoints.last else { return }
+        viewHandler(lastPoint: lastPoint, isNew: false, sender: "slider")
     }
     
     @IBAction func opacitySliderF(_ sender: UISlider) {
@@ -178,16 +193,30 @@ class MotionViewController: UIViewController {
 
 //MARK: - Delegation Functions
 extension MotionViewController: DrawableImageViewDelegate {
+    func removeScissorView() {
+        scissorView?.removeFromSuperview()
+        scissorView = nil
+    }
+    
+    func isScissorContainsTouch(location: CGPoint) -> Bool {
+        guard let frame = scissorView?.frame else { return false }
+        return frame.contains(location)
+    }
+    
     func previewTheTouchedPoint(touch: UITouch) {
         //TODO: - Preview is missing
     }
     
     func removePreviewImage() {
-        //TODO: - Preview is missing
     }
 
-    func createMotioningViews(firstPoint: CGPoint, lastPoint: CGPoint, path: UIBezierPath) {
-        viewHandler(firstPoint: firstPoint, lastPoint: lastPoint, path: path, sender: "touch")
+    func createMotioningViews(lastPoint: CGPoint) {
+        if motionUIArray.isEmpty {
+            viewHandler(lastPoint: lastPoint, isNew: true, sender: "touch")
+        }
+        else {
+            viewHandler(lastPoint: lastPoint, isNew: false, sender: "touch")
+        }
     }
     
     func didTouchedOutsidePath() {
@@ -216,42 +245,73 @@ extension MotionViewController: DrawableImageViewDelegate {
         
         drawableImageView.addSubview(maskedImageView!)
     }
+    
+    func createScissorView(location: CGPoint) {
+        scissorView = UIImageView(image: UIImage(named: "scissor"))
+        scissorView?.center = location
+        
+        
+        if drawableImageView.pathPoints.count > 1 {
+            guard let p1 = drawableImageView.pathPoints.last else { return }
+            let p2 = drawableImageView.pathPoints[drawableImageView.pathPoints.count - 2]
+            
+            let angle: CGFloat!
+            if p2.x - p1.x > 0 {
+                angle = atan((p2.y - p1.y) / (p2.x - p1.x)) - CGFloat.pi / 180 * 90
+            }
+            else {
+                angle = atan((p2.y - p1.y) / (p2.x - p1.x)) + CGFloat.pi / 180 * 90
+            }
+            
+            scissorView?.transform = CGAffineTransform(rotationAngle: angle)
+            
+            drawableImageView.addSubview(scissorView!)
+        }
+    }
 }
 
 // MARK: - Helper Functions
 extension MotionViewController {
     //creates, relocates the views
-    func  viewHandler(firstPoint: CGPoint, lastPoint: CGPoint, path: UIBezierPath, sender: String) {
-        guard let size: CGSize = drawableImageView.imageView?.frame.size else { return }
+    func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
+        
+        guard let path = drawableImageView.path else { return }
+        
+        let sPx = path.bounds.origin.x + path.bounds.width / 2
+        let sPy = path.bounds.origin.y + path.bounds.height / 2
         
         for i in 0..<motionImageCount {
-            let diffX = (lastPoint.x - firstPoint.x) / CGFloat(motionImageCount) * CGFloat(i)
-            let diffY = (lastPoint.y - firstPoint.y) / CGFloat(motionImageCount) * CGFloat(i)
-            //if the next view will be created
-            if motionUIArray.count < motionImageCount {
-                //create a new view
-                let tempView = UIImageView(frame: CGRect(origin: drawableImageView.imageView!.frame.origin, size: size))
-                tempView.isUserInteractionEnabled = false
-                tempView.image = drawableImageView.imageView?.image
-                tempView.transform = CGAffineTransform(translationX: diffX, y: diffY)
-                //mask the view
-                maskView(tempView: tempView, path: path)
-                //set its alpha
-                tempView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
-                //add the view to screen and to motionUIArray
-                motionUIArray.append(tempView)
-                drawableImageView.addSubview(tempView)
-                
-                drawableImageView.bringSubviewToFront(maskedImageView!)
-                continue
-            }
+            
+            let diffX = (lastPoint.x - sPx) / CGFloat(motionImageCount)
+            let centerX = drawableImageView.imageView!.center.x + (CGFloat(i) + 1) * diffX
+            let diffY = (lastPoint.y - sPy) / CGFloat(motionImageCount)
+            let centerY = drawableImageView.imageView!.center.y + (CGFloat(i) + 1) * diffY
+            
             if sender == "touch" {
+                if isNew {
+                    let tempView = UIImageView(frame: drawableImageView.imageView!.frame)
+                    tempView.isUserInteractionEnabled = false
+                    tempView.image = drawableImageView.imageView?.image
+                    tempView.center = CGPoint(x: centerX, y: centerY)
+                    
+                    guard let path = drawableImageView.path else { return }
+                    maskView(tempView: tempView, path: path)
+
+                    tempView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
+
+                    motionUIArray.append(tempView)
+                    drawableImageView.addSubview(tempView)
+
+                    drawableImageView.bringSubviewToFront(maskedImageView!)
+                } else {
+                    let curView = motionUIArray[i]
+                    curView.center = CGPoint(x: centerX, y: centerY)
+                }
+            } else {
                 let curView = motionUIArray[i]
-                curView.transform = CGAffineTransform(translationX: diffX, y: diffY)
-            } else { //if the caller is slider
-                let curView = motionUIArray[i]
+
                 curView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
-                curView.transform = CGAffineTransform(translationX: diffX, y: diffY)
+                curView.center = CGPoint(x: centerX, y: centerY)
             }
         }
     }

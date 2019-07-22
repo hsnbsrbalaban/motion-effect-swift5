@@ -84,11 +84,17 @@ class MotionViewController: UIViewController {
     }
 
     @IBAction func saveButton(_ sender: UIButton) {
-        drawableImageView.dashedLayer.removeFromSuperlayer()
-        let imageData = captureScreenshot(layer: drawableImageView.layer)
-        UIImageWriteToSavedPhotosAlbum(imageData, nil, nil, nil)
-        drawableImageView.layer.addSublayer(drawableImageView.dashedLayer)
-        drawableImageView.dashedLayer.removeAllAnimations()
+        let alertController = UIAlertController(title: "Save image?", message: nil, preferredStyle: .alert)
+        alertController.addAction(UIAlertAction(title: "Yep", style: .default, handler: { ctx in
+            self.drawableImageView.dashedLayer.removeFromSuperlayer()
+            let imageData = self.captureScreenshot(view: self.drawableImageView)
+            UIImageWriteToSavedPhotosAlbum(imageData, nil, nil, nil)
+            self.drawableImageView.layer.addSublayer(self.drawableImageView.dashedLayer)
+            self.drawableImageView.dashedLayer.removeAllAnimations()
+        }))
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(alertController, animated: true, completion: nil)
     }
 
     @objc func invisibleButtonPressed(_ pressedGR: UILongPressGestureRecognizer) {
@@ -222,14 +228,25 @@ extension MotionViewController: DrawableImageViewDelegate {
     
     func isScissorContainsTouch(location: CGPoint) -> Bool {
         guard let frame = scissorView?.frame else { return false }
-        return frame.contains(location)
+        return frame.contains(view.convert(location, from: drawableImageView))
     }
     
     func previewTheTouchedPoint(touch: UITouch) {
-        //TODO: - Preview is missing
+//
+//        let location = touch.location(in: drawableImageView)
+//        let tempView = UIView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 80, height: 80)))
+//        tempView.center = CGPoint(x: location.x - 40 < 0 ? 0 : location.x - 40,
+//                                  y: location.y - 40 < 0 ? 0 : location.y - 40)
+//
+//        self.view.insertSubview(tempView, at: 0)
+//        let image = captureScreenshot(view: tempView)
+//        tempView.removeFromSuperview()
+//
+//        preView.image = image
     }
     
     func removePreviewImage() {
+//        preView.image = nil
     }
 
     func createMotioningViews(lastPoint: CGPoint) {
@@ -270,8 +287,10 @@ extension MotionViewController: DrawableImageViewDelegate {
     
     func createScissorView(location: CGPoint) {
         scissorView = UIImageView(image: UIImage(named: "scissor"))
-        scissorView?.center = location
-        
+        scissorView?.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 24, height: 24))
+        scissorView?.contentMode = .scaleAspectFit
+        scissorView?.tintColor = UIColor.white
+        scissorView?.center = view.convert(location, from: drawableImageView)
         
         if drawableImageView.pathPoints.count > 1 {
             guard let p1 = drawableImageView.pathPoints.last else { return }
@@ -287,10 +306,11 @@ extension MotionViewController: DrawableImageViewDelegate {
             
             scissorView?.transform = CGAffineTransform(rotationAngle: angle)
             
-            drawableImageView.addSubview(scissorView!)
+            self.view.addSubview(scissorView!)
         }
     }
 }
+
 //MARK: - ScrollView
 extension MotionViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
@@ -299,6 +319,8 @@ extension MotionViewController: UIScrollViewDelegate {
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         setContentInset(scrollView)
+        guard let lastPoint = drawableImageView.touchPoints.last else {return}
+        scissorView?.center = view.convert(lastPoint, from: drawableImageView)
     }
     
     func setContentInset(_ scrollView: UIScrollView) {
@@ -366,15 +388,8 @@ extension MotionViewController {
         tempView.layer.mask = maskLayer
     }
     
-    func captureScreenshot(layer: CALayer) -> UIImage {
-//        let scale = UIScreen.main.scale
-//        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
-//        layer.render(in: UIGraphicsGetCurrentContext()!)
-//        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
-//        UIGraphicsEndImageContext()
-//        return screenshot!
-        
-        return UIImage(view: drawableImageView, scale: UIScreen.main.scale)
+    func captureScreenshot(view: UIView) -> UIImage {
+        return UIImage(view: view, scale: UIScreen.main.scale)
     }
 }
 

@@ -110,6 +110,7 @@
                                                     <constraint firstAttribute="width" constant="44" id="C03-Zh-okR"/>
                                                     <constraint firstAttribute="height" constant="44" id="z8p-8B-YWx"/>
                                                 </constraints>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <state key="normal" image="discard"/>
                                                 <connections>
                                                     <action selector="discardButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="n0q-cA-DQY"/>
@@ -124,6 +125,7 @@
                                                             <constraint firstAttribute="width" constant="44" id="dLg-A5-cvG"/>
                                                             <constraint firstAttribute="height" constant="44" id="xqW-i3-ecB"/>
                                                         </constraints>
+                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <state key="normal" image="invisible"/>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DUe-iQ-MiO" userLabel="Refresh Button">
@@ -132,6 +134,7 @@
                                                             <constraint firstAttribute="width" constant="44" id="2M3-AL-lrq"/>
                                                             <constraint firstAttribute="height" constant="44" id="KCB-ly-zIM"/>
                                                         </constraints>
+                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <state key="normal" image="repeat"/>
                                                         <connections>
                                                             <action selector="refreshButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="4PS-EX-T2M"/>
@@ -154,6 +157,7 @@
                                                     <constraint firstAttribute="width" constant="44" id="IT4-x1-YL6"/>
                                                     <constraint firstAttribute="height" constant="44" id="gdv-qj-37H"/>
                                                 </constraints>
+                                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 <state key="normal" image="save"/>
                                                 <connections>
                                                     <action selector="saveButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="lOA-VQ-0iv"/>
@@ -173,6 +177,7 @@
                                     </view>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4y0-EH-ATx" userLabel="PreView">
                                         <rect key="frame" x="8" y="60" width="80" height="80"/>
+                                        <color key="backgroundColor" red="0.90588235289999997" green="0.29803921570000003" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="80" id="kDd-Xe-jfX"/>
                                             <constraint firstAttribute="width" constant="80" id="u7i-OS-sPq"/>
@@ -359,12 +364,12 @@
         </scene>
     </scenes>
     <resources>
-        <image name="discard" width="64" height="64"/>
-        <image name="invisible" width="64" height="64"/>
+        <image name="discard" width="32" height="32"/>
+        <image name="invisible" width="32" height="32"/>
         <image name="motion" width="64" height="64"/>
         <image name="plus" width="64" height="64"/>
-        <image name="repeat" width="64" height="64"/>
-        <image name="save" width="64" height="64"/>
+        <image name="repeat" width="32" height="32"/>
+        <image name="save" width="32" height="32"/>
         <image name="up-arrow" width="64" height="64"/>
     </resources>
 </document>

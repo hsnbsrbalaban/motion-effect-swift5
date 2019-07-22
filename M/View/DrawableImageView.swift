@@ -237,6 +237,7 @@ class DrawableImageView: UIView {
             
             if distance(location, pathPoints.first!) > 50 {
                 self.delegate.createScissorView(location: appendPoint(location: location))
+                self.delegate.removePreviewImage()
                 return
             }
             

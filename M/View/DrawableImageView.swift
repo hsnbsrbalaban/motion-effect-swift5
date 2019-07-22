@@ -68,6 +68,7 @@ class DrawableImageView: UIView {
         dashedLayer.strokeColor = UIColor.black.cgColor
         dashedLayer.fillColor = nil
         self.layer.addSublayer(dashedLayer)
+        self.isMultipleTouchEnabled = true
     }
     
     
@@ -117,7 +118,14 @@ class DrawableImageView: UIView {
     //MARK: - Touch Handling
     var motionState: States = .initial
     
+    func touchCount(_ event: UIEvent?) -> Int {
+        return (event?.touches(for: self)?.count)!
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if touchCount(event) > 1 {
+            return
+        }
         //get the drawed path and the location of the touched point
         guard let tempPath = path, let touch = touches.first else { return }
         let location = touch.location(in: self)
@@ -195,6 +203,9 @@ class DrawableImageView: UIView {
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if touchCount(event) > 1 {
+            return
+        }
         //get the drawed path and the location of the touched point
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
@@ -215,6 +226,9 @@ class DrawableImageView: UIView {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if touchCount(event) > 1 {
+            return
+        }
         //get the drawed path and the location of the touched point
         guard let tempPath = path, let touch = touches.first else { return }
         let location = touch.location(in: self)

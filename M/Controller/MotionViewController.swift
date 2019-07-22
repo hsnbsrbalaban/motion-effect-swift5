@@ -1,9 +1,21 @@
 import UIKit
 
+//This class is used to get safe area insets
 class Device {
     static var safeAreaInset: UIEdgeInsets {
         guard let window = UIApplication.shared.keyWindow else { return .zero }
         return window.safeAreaInsets
+    }
+}
+
+//Returns an image that contains the screenshot of given view
+extension UIImage {
+    convenience init(view: UIView, scale: CGFloat) {
+        UIGraphicsBeginImageContextWithOptions(view.bounds.size, true, scale)
+        view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        self.init(cgImage: image!.cgImage!)
     }
 }
 
@@ -390,15 +402,5 @@ extension MotionViewController {
     
     func captureScreenshot(view: UIView) -> UIImage {
         return UIImage(view: view, scale: UIScreen.main.scale)
-    }
-}
-
-extension UIImage {
-    convenience init(view: UIView, scale: CGFloat) {
-        UIGraphicsBeginImageContextWithOptions(view.bounds.size, true, scale)
-        view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        self.init(cgImage: image!.cgImage!)
     }
 }

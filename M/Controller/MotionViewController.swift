@@ -66,7 +66,11 @@ class MotionViewController: UIViewController {
     }
 
     @IBAction func saveButton(_ sender: UIButton) {
-        //TODO: - save button will be implemented
+        drawableImageView.dashedLayer.removeFromSuperlayer()
+        let imageData = captureScreenshot(layer: drawableImageView.layer)
+        UIImageWriteToSavedPhotosAlbum(imageData, nil, nil, nil)
+        drawableImageView.layer.addSublayer(drawableImageView.dashedLayer)
+        drawableImageView.dashedLayer.removeAllAnimations()
     }
 
     @objc func invisibleButtonPressed(_ pressedGR: UILongPressGestureRecognizer) {
@@ -320,5 +324,14 @@ extension MotionViewController {
         maskLayer.frame = CGRect(origin: .zero, size: rect.size)
         maskLayer.path = path.cgPath
         tempView.layer.mask = maskLayer
+    }
+    
+    func captureScreenshot(layer: CALayer) -> UIImage{
+        let scale = UIScreen.main.scale
+        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
+        layer.render(in: UIGraphicsGetCurrentContext()!)
+        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return screenshot!
     }
 }

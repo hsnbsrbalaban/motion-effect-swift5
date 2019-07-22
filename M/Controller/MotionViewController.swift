@@ -17,6 +17,7 @@ class MotionViewController: UIViewController {
     
     var image: UIImage!
     var drawableImageView: DrawableImageView!
+    var scrollView: UIScrollView!
     var maskedImageView: UIImageView?
     var scissorView: UIImageView?
     
@@ -26,22 +27,8 @@ class MotionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Create imageView
-        let calculatedHeight = view.frame.height - Device.safeAreaInset.top - Device.safeAreaInset.bottom
-        let imageViewSizeConstant = min(view.frame.size.width / image.size.width,
-                                        (calculatedHeight - 280) / image.size.height)
-        drawableImageView = DrawableImageView(frame: CGRect(origin: CGPoint.zero,
-                                                    size: CGSize(width: image.size.width * imageViewSizeConstant,
-                                                                 height: image.size.height * imageViewSizeConstant)))
-        let centerHeight = ((calculatedHeight - topContainer.frame.height - bottomContainer.frame.height) / 2) + topContainer.frame.height + Device.safeAreaInset.top
-        drawableImageView.center = CGPoint(x: self.view.center.x, y: centerHeight)
-        drawableImageView.clipsToBounds = true
-        // Set the image of imageView
-        drawableImageView.imageView?.image = image
-        drawableImageView.delegate = self
         
-        view.addSubview(drawableImageView)
+        setInitialScreen()
         
         // Menu part
         darkFillingView.layer.cornerRadius = darkFillingView.frame.width / 2
@@ -53,6 +40,37 @@ class MotionViewController: UIViewController {
         let pressedGR = UILongPressGestureRecognizer(target: self, action: #selector(invisibleButtonPressed(_:)))
         pressedGR.minimumPressDuration = 0.01
         invisibleButton.addGestureRecognizer(pressedGR)
+    }
+    //initializes scrollView and drawableImageView. sets their properties and adds them to hierarchy
+    func setInitialScreen() {
+        //extract safe area insets from the view's height
+        let heightWithoutSafeArea = view.frame.height - Device.safeAreaInset.top - Device.safeAreaInset.bottom
+        let frameSizeConstant = min(view.frame.size.width / image.size.width, (heightWithoutSafeArea - 280) / image.size.height)
+        let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: image.size.width * frameSizeConstant, height: image.size.height * frameSizeConstant))
+        //center height for the frame
+        let frameCenterHeight = ((heightWithoutSafeArea - topContainer.frame.height - bottomContainer.frame.height) / 2) + topContainer.frame.height + Device.safeAreaInset.top
+        //initialize scrollView
+        scrollView = UIScrollView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: self.view.frame.width, height: heightWithoutSafeArea * 0.8)))
+        scrollView.center = CGPoint(x: self.view.center.x, y: frameCenterHeight)
+        scrollView.backgroundColor = UIColor.clear
+        scrollView.contentSize = frame.size
+        scrollView.autoresizingMask = UIView.AutoresizingMask(rawValue: UIView.AutoresizingMask.flexibleHeight.rawValue | UIView.AutoresizingMask.flexibleWidth.rawValue)
+        scrollView.minimumZoomScale = 0.5
+        scrollView.maximumZoomScale = 5
+        scrollView.zoomScale = 1
+        scrollView.delegate = self
+        scrollView.removeGestureRecognizer(scrollView.panGestureRecognizer)
+        
+        drawableImageView = DrawableImageView(frame: frame)
+        drawableImageView.clipsToBounds = true
+        // Set the image of imageView
+        drawableImageView.imageView?.image = image
+        drawableImageView.delegate = self
+        
+        scrollView.addSubview(drawableImageView)
+        self.view.insertSubview(scrollView, at: 0)
+        
+        setContentInset(scrollView)
     }
     
     @IBAction func discardButton(_ sender: UIButton) {
@@ -104,6 +122,8 @@ class MotionViewController: UIViewController {
         drawableImageView.setNeedsDisplay()
         
         drawableImageView.motionState = .initial
+        
+        scrollView.zoomScale = 1
     }
     
     
@@ -173,7 +193,7 @@ class MotionViewController: UIViewController {
                 self.darkFillingView.transform = CGAffineTransform(scaleX: 11, y: 11)
                 self.toggleMenuButton.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi))
                 // Took more than 1 hour to figure this yPos out !! FML
-                let yPos: CGFloat = self.menuView.frame.height - self.view.frame.maxY + self.view.convert(self.menuView.frame, from: self.menuView.superview).origin.y + Device.safeAreaInset.bottom - 8
+                let yPos: CGFloat = self.menuView.frame.height - self.view.frame.maxY + self.view.convert(self.menuView.frame, from: self.menuView.superview).origin.y + Device.safeAreaInset.bottom - 2
                 self.menuView.transform = CGAffineTransform(translationX: 0, y: -yPos)
             }) { (true) in
                 UIView.animate(withDuration: 0.3, animations: {
@@ -271,8 +291,28 @@ extension MotionViewController: DrawableImageViewDelegate {
         }
     }
 }
+//MARK: - ScrollView
+extension MotionViewController: UIScrollViewDelegate {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return drawableImageView
+    }
+    
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        setContentInset(scrollView)
+    }
+    
+    func setContentInset(_ scrollView: UIScrollView) {
+        let imageViewSize = drawableImageView.frame.size
+        let scrollViewSize = scrollView.bounds.size
+        
+        let verticalPadding = imageViewSize.height < scrollViewSize.height ? (scrollViewSize.height - imageViewSize.height) / 2 : 0
+        let horizontalPadding = imageViewSize.width < scrollViewSize.width ? (scrollViewSize.width - imageViewSize.width) / 2 : 0
+        // this is the distance that the content view is inset from the enclosing scroll view.
+        scrollView.contentInset = UIEdgeInsets(top: verticalPadding, left: horizontalPadding, bottom: verticalPadding, right: horizontalPadding)
+    }
+}
 
-// MARK: - Helper Functions
+//MARK: - Helper Functions
 extension MotionViewController {
     //creates, relocates the views
     func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
@@ -326,12 +366,24 @@ extension MotionViewController {
         tempView.layer.mask = maskLayer
     }
     
-    func captureScreenshot(layer: CALayer) -> UIImage{
-        let scale = UIScreen.main.scale
-        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
-        layer.render(in: UIGraphicsGetCurrentContext()!)
-        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+    func captureScreenshot(layer: CALayer) -> UIImage {
+//        let scale = UIScreen.main.scale
+//        UIGraphicsBeginImageContextWithOptions(layer.frame.size, false, scale);
+//        layer.render(in: UIGraphicsGetCurrentContext()!)
+//        let screenshot = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+//        return screenshot!
+        
+        return UIImage(view: drawableImageView, scale: UIScreen.main.scale)
+    }
+}
+
+extension UIImage {
+    convenience init(view: UIView, scale: CGFloat) {
+        UIGraphicsBeginImageContextWithOptions(view.bounds.size, true, scale)
+        view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return screenshot!
+        self.init(cgImage: image!.cgImage!)
     }
 }

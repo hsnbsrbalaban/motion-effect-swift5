@@ -175,21 +175,21 @@
                                             <constraint firstAttribute="height" constant="52" id="t2j-VF-seh"/>
                                         </constraints>
                                     </view>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4y0-EH-ATx" userLabel="PreView">
+                                    <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m6O-PI-Mzf" userLabel="preview">
                                         <rect key="frame" x="8" y="60" width="80" height="80"/>
-                                        <color key="backgroundColor" red="0.90588235289999997" green="0.29803921570000003" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="80" id="kDd-Xe-jfX"/>
-                                            <constraint firstAttribute="width" constant="80" id="u7i-OS-sPq"/>
+                                            <constraint firstAttribute="width" constant="80" id="IbJ-Jh-nxf"/>
+                                            <constraint firstAttribute="height" constant="80" id="x8k-Hy-5Sk"/>
                                         </constraints>
-                                    </imageView>
+                                    </view>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="4y0-EH-ATx" firstAttribute="leading" secondItem="TbT-vQ-oiD" secondAttribute="leading" constant="8" id="8cP-xc-wp3"/>
                                     <constraint firstItem="9di-uF-RV1" firstAttribute="leading" secondItem="TbT-vQ-oiD" secondAttribute="leading" id="9mW-sn-E6y"/>
                                     <constraint firstAttribute="height" constant="140" id="A5w-aw-EzZ"/>
-                                    <constraint firstItem="4y0-EH-ATx" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="bottom" constant="8" id="iRU-IR-bmw"/>
+                                    <constraint firstItem="m6O-PI-Mzf" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="bottom" constant="8" id="HTk-oR-ZV2"/>
+                                    <constraint firstItem="m6O-PI-Mzf" firstAttribute="leading" secondItem="TbT-vQ-oiD" secondAttribute="leading" constant="8" id="rZq-B6-6Lo"/>
                                     <constraint firstItem="9di-uF-RV1" firstAttribute="width" secondItem="TbT-vQ-oiD" secondAttribute="width" id="vHW-ha-VlX"/>
                                     <constraint firstItem="9di-uF-RV1" firstAttribute="top" secondItem="TbT-vQ-oiD" secondAttribute="top" id="yMC-Jv-gxa"/>
                                 </constraints>
@@ -353,7 +353,7 @@
                         <outlet property="opacityLabel" destination="yZk-ac-CC6" id="cNJ-01-sUc"/>
                         <outlet property="opacitySlider" destination="RDI-iA-qen" id="FDy-Cc-yd2"/>
                         <outlet property="opacityView" destination="8lh-bA-q8x" id="Hdn-to-VNo"/>
-                        <outlet property="preView" destination="4y0-EH-ATx" id="dr6-5a-dvs"/>
+                        <outlet property="preView" destination="m6O-PI-Mzf" id="SKt-3m-kjG"/>
                         <outlet property="toggleMenuButton" destination="OxM-EM-xPa" id="aUW-xl-3sy"/>
                         <outlet property="topContainer" destination="TbT-vQ-oiD" id="TZY-kE-FvB"/>
                     </connections>

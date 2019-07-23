@@ -25,17 +25,20 @@ class MotionViewController: UIViewController {
     @IBOutlet weak var bottomContainer: UIView!
     
     @IBOutlet weak var invisibleButton: UIButton!
-    @IBOutlet weak var preView: UIImageView!
+    @IBOutlet weak var preView: UIView!
     
     var image: UIImage!
     var drawableImageView: DrawableImageView!
     var scrollView: UIScrollView!
     var maskedImageView: UIImageView?
     var scissorView: UIImageView?
+    var tempImageView: UIImageView?
     
     var motionImageCount: Int = 10
     var motionImageAlpha: Int = 100
     var motionUIArray = [UIImageView]()
+    
+    var frameSizeConstant: CGFloat!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,7 +60,7 @@ class MotionViewController: UIViewController {
     func setInitialScreen() {
         //extract safe area insets from the view's height
         let heightWithoutSafeArea = view.frame.height - Device.safeAreaInset.top - Device.safeAreaInset.bottom
-        let frameSizeConstant = min(view.frame.size.width / image.size.width, (heightWithoutSafeArea - 280) / image.size.height)
+        frameSizeConstant = min(view.frame.size.width / image.size.width, (heightWithoutSafeArea - 280) / image.size.height)
         let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: image.size.width * frameSizeConstant, height: image.size.height * frameSizeConstant))
         //center height for the frame
         let frameCenterHeight = ((heightWithoutSafeArea - topContainer.frame.height - bottomContainer.frame.height) / 2) + topContainer.frame.height + Device.safeAreaInset.top
@@ -83,6 +86,11 @@ class MotionViewController: UIViewController {
         self.view.insertSubview(scrollView, at: 0)
         
         setContentInset(scrollView)
+        
+        tempImageView = UIImageView(frame: drawableImageView.frame)
+        tempImageView?.isUserInteractionEnabled = false
+        preView.addSubview(tempImageView!)
+        tempImageView?.center = CGPoint(x: preView.frame.width / 2, y: preView.frame.height / 2)
     }
     
     @IBAction func discardButton(_ sender: UIButton) {
@@ -162,11 +170,12 @@ class MotionViewController: UIViewController {
             }
         } else {
             while Int(sender.value) != currVal {
-                let tempView = UIImageView(frame: drawableImageView.imageView!.frame)
-                tempView.image = drawableImageView.imageView!.image
+                guard let imageView = drawableImageView.imageView, let path = drawableImageView.path else { return }
+                let tempView = UIImageView(frame: imageView.frame)
+                tempView.image = imageView.image
                 tempView.isUserInteractionEnabled = false
                 
-                maskView(tempView: tempView, path: drawableImageView.path!)
+                maskView(tempView: tempView, path: path)
                 
                 motionUIArray.append(tempView)
                 drawableImageView.addSubview(tempView)
@@ -244,21 +253,22 @@ extension MotionViewController: DrawableImageViewDelegate {
     }
     
     func previewTheTouchedPoint(touch: UITouch) {
-//
-//        let location = touch.location(in: drawableImageView)
-//        let tempView = UIView(frame: CGRect(origin: CGPoint.zero, size: CGSize(width: 80, height: 80)))
-//        tempView.center = CGPoint(x: location.x - 40 < 0 ? 0 : location.x - 40,
-//                                  y: location.y - 40 < 0 ? 0 : location.y - 40)
-//
-//        self.view.insertSubview(tempView, at: 0)
-//        let image = captureScreenshot(view: tempView)
-//        tempView.removeFromSuperview()
-//
-//        preView.image = image
+        
+        let snapshotImage = UIImage(view: drawableImageView, scale: UIScreen.main.scale)
+        
+        tempImageView?.image = snapshotImage
+        
+        var location = touch.location(in: drawableImageView)
+        
+        location.x = min(drawableImageView.frame.width - 40, max(location.x, 40))
+        location.y = min(drawableImageView.frame.height - 40, max(location.y, 40))
+        
+        let diff = CGPoint(x: location.x - drawableImageView.center.x, y: location.y - drawableImageView.center.y)
+        tempImageView?.center = CGPoint(x: preView.frame.width / 2 - diff.x, y: preView.frame.height / 2 - diff.y)
     }
     
     func removePreviewImage() {
-//        preView.image = nil
+        tempImageView?.image = nil
     }
 
     func createMotioningViews(lastPoint: CGPoint) {
@@ -283,10 +293,11 @@ extension MotionViewController: DrawableImageViewDelegate {
     }
     
     func createMaskedImageView(path: UIBezierPath) {
-        let rect: CGRect = drawableImageView.imageView!.frame
+        guard let imageView = drawableImageView.imageView else { return }
+        let rect: CGRect = imageView.frame
         
         maskedImageView = UIImageView(frame: rect)
-        maskedImageView?.image = drawableImageView.imageView?.image
+        maskedImageView?.image = imageView.image
         maskedImageView?.isUserInteractionEnabled = false
         
         let maskLayer = CAShapeLayer()
@@ -333,6 +344,7 @@ extension MotionViewController: UIScrollViewDelegate {
         setContentInset(scrollView)
         guard let lastPoint = drawableImageView.touchPoints.last else {return}
         scissorView?.center = view.convert(lastPoint, from: drawableImageView)
+        view.bringSubviewToFront(topContainer)
     }
     
     func setContentInset(_ scrollView: UIScrollView) {
@@ -351,7 +363,7 @@ extension MotionViewController {
     //creates, relocates the views
     func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
         
-        guard let path = drawableImageView.path else { return }
+        guard let imageView = drawableImageView.imageView, let path = drawableImageView.path else { return }
         
         let sPx = path.bounds.origin.x + path.bounds.width / 2
         let sPy = path.bounds.origin.y + path.bounds.height / 2
@@ -359,15 +371,15 @@ extension MotionViewController {
         for i in 0..<motionImageCount {
             
             let diffX = (lastPoint.x - sPx) / CGFloat(motionImageCount)
-            let centerX = drawableImageView.imageView!.center.x + (CGFloat(i) + 1) * diffX
+            let centerX = imageView.center.x + (CGFloat(i) + 1) * diffX
             let diffY = (lastPoint.y - sPy) / CGFloat(motionImageCount)
-            let centerY = drawableImageView.imageView!.center.y + (CGFloat(i) + 1) * diffY
+            let centerY = imageView.center.y + (CGFloat(i) + 1) * diffY
             
             if sender == "touch" {
                 if isNew {
-                    let tempView = UIImageView(frame: drawableImageView.imageView!.frame)
+                    let tempView = UIImageView(frame: imageView.frame)
                     tempView.isUserInteractionEnabled = false
-                    tempView.image = drawableImageView.imageView?.image
+                    tempView.image = imageView.image
                     tempView.center = CGPoint(x: centerX, y: centerY)
                     
                     guard let path = drawableImageView.path else { return }
@@ -393,7 +405,8 @@ extension MotionViewController {
     }
     //masks the given view according to path
     func maskView(tempView: UIImageView, path: UIBezierPath) {
-        let rect: CGRect = drawableImageView.imageView!.frame
+        guard let imageView = drawableImageView.imageView else { return }
+        let rect: CGRect = imageView.frame
         let maskLayer = CAShapeLayer()
         maskLayer.frame = CGRect(origin: .zero, size: rect.size)
         maskLayer.path = path.cgPath

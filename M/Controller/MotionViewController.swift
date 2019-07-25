@@ -282,16 +282,16 @@ class MotionViewController: UIViewController {
     
     @IBOutlet weak var menuView: UIView!
     @IBOutlet weak var darkFillingView: UIView!
-    @IBOutlet weak var toggleMenuButton: UIButton!
-    @IBOutlet weak var imageCountLabel: UILabel!
-    @IBOutlet weak var imageCountSlider: UISlider!
-    @IBOutlet weak var opacityLabel: UILabel!
-    @IBOutlet weak var opacitySlider: UISlider!
-    
     @IBOutlet weak var imageCountView: UIView!
     @IBOutlet weak var opacityView: UIView!
+    @IBOutlet weak var imageCountLabel: UILabel!
+    @IBOutlet weak var opacityLabel: UILabel!
+    @IBOutlet weak var imageCountSlider: UISlider!
+    @IBOutlet weak var opacitySlider: UISlider!
+    @IBOutlet weak var toggleMenuButton: UIButton!
     
     @IBAction func menuButtonPressed(_ sender: UIButton) {
+        //if the menu is closed, open it
         if darkFillingView.transform == .identity {
             UIView.animate(withDuration: 0.5, animations: {
                 self.darkFillingView.transform = CGAffineTransform(scaleX: 11, y: 11)
@@ -305,7 +305,7 @@ class MotionViewController: UIViewController {
                     self.opacityView.alpha = 1
                 })
             }
-        } else {
+        } else { // if menu is open, close it
             UIView.animate(withDuration: 0.5) {
                 self.darkFillingView.transform = .identity
                 self.toggleMenuButton.transform = .identity
@@ -411,36 +411,41 @@ class MotionViewController: UIViewController {
 
 //MARK: - Delegation Functions
 extension MotionViewController: DrawableImageViewDelegate {
-    
+    //shows an 80x80 preview of the currently touched point inside preView
     func previewTheTouchedPoint(touch: UITouch) {
-        
+        //take snapshot of drawableImageView
         let snapshotImage = UIImage(view: drawableImageView, scale: UIScreen.main.scale)
-        
+        //set the preView's image
         tempImageView?.image = snapshotImage
-        
+        //get the touched point
         var location = touch.location(in: drawableImageView)
-        
+        //checks if the touched point is inside preView
         checkPreview(location: location)
-        
+        //bound restrictions for the touched point
         location.x = min(drawableImageView.frame.width - 40, max(location.x, 40))
         location.y = min(drawableImageView.frame.height - 40, max(location.y, 40))
-        
+        //calculate the original center from the zoomed in/out drawableImageView
         let scaledCenter: CGPoint = CGPoint(x: drawableImageView.center.x / scrollView.zoomScale, y: drawableImageView.center.y / scrollView.zoomScale)
+        //calculate the difference between touched point and drawableImageView's center
         let diff = CGPoint(x: location.x - scaledCenter.x, y: location.y - scaledCenter.y)
+        //shift the center of tempImageView by the calculated difference
         tempImageView?.center = CGPoint(x: preView.frame.width / 2 - diff.x, y: preView.frame.height / 2 - diff.y)
     }
     
+    //removes the preView's image
     func removePreviewImage() {
         tempImageView?.image = nil
     }
     
+    //creates scissorView and centers it at the given location
     func createScissorView(location: CGPoint) {
+        //initialize the scissorView
         scissorView = UIImageView(image: UIImage(named: "scissor"))
         scissorView?.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 24, height: 24))
         scissorView?.contentMode = .scaleAspectFit
         scissorView?.tintColor = UIColor.white
         scissorView?.center = iDontKnowItsNameView.convert(location, from: drawableImageView)
-        
+        //calculate the rotation angle for the scissor
         if drawableImageView.pathPoints.count > 1 {
             guard let p1 = drawableImageView.pathPoints.last else { return }
             let p2 = drawableImageView.pathPoints[drawableImageView.pathPoints.count - 2]
@@ -452,69 +457,78 @@ extension MotionViewController: DrawableImageViewDelegate {
             else {
                 angle = atan((p2.y - p1.y) / (p2.x - p1.x)) + CGFloat.pi / 180 * 90
             }
-            
+            //rotate scissor by the calculated angle
             scissorView?.transform = CGAffineTransform(rotationAngle: angle)
             
             guard let tempView = scissorView else { return }
-            
+            //add scissorView to screen and bring it to front
             self.iDontKnowItsNameView.addSubview(tempView)
             self.view.bringSubviewToFront(iDontKnowItsNameView)
         }
     }
     
+    //removes the scissorView from the screen
     func removeScissorView() {
         scissorView?.removeFromSuperview()
         scissorView = nil
     }
     
+    //checks if the given point is inside the scissorView
     func isScissorContainsTouch(location: CGPoint) -> Bool {
         guard let frame = scissorView?.frame else { return false }
         return frame.contains(iDontKnowItsNameView.convert(location, from: drawableImageView))
     }
     
+    //creates circleView and centers it at the given location
     func createCircleView(location: CGPoint) {
+        //initialize the circleView
         circleView = UIImageView(image: UIImage(named: "circle"))
         circleView?.tintColor = UIColor.white
         circleView?.center = iDontKnowItsNameView.convert(location, from: drawableImageView)
         
         guard let tempView = circleView else { return }
-        
+        //add circleView to screen and bring it to front
         self.iDontKnowItsNameView.addSubview(tempView)
         self.view.bringSubviewToFront(iDontKnowItsNameView)
     }
     
+    //removes the circleView from the screen
     func removeCircleView() {
         circleView?.removeFromSuperview()
         circleView = nil
     }
     
+    //initialize the maskedImageView and adds it to screen
     func createMaskedImageView(path: UIBezierPath) {
         guard let imageView = drawableImageView.imageView else { return }
         let rect: CGRect = imageView.frame
-        
+        //initialize the maskedImageView
         maskedImageView = UIImageView(frame: rect)
         maskedImageView?.image = imageView.image
         maskedImageView?.isUserInteractionEnabled = false
-        
+        //initialize the maskLayer and set its path
         let maskLayer = CAShapeLayer()
         maskLayer.frame = CGRect(origin: .zero, size: rect.size)
         maskLayer.path = path.cgPath
         maskedImageView?.layer.mask = maskLayer
         
         guard let tempView = maskedImageView else { return }
-        
+        //add the new view to screen
         drawableImageView.addSubview(tempView)
     }
     
+    //calls viewHandler with correct parameters
     func createMotioningViews(lastPoint: CGPoint) {
+        //if the motionUIArray is empty, create new views
         if motionUIArray.isEmpty {
             viewHandler(lastPoint: lastPoint, isNew: true, sender: "touch")
         }
-        else {
+        else { //if the motionUIArray is not empty, re-arrange the views
             viewHandler(lastPoint: lastPoint, isNew: false, sender: "touch")
         }
     }
     
+    //removes all the views that are created after drawing and motioning
     func didTouchedOutsidePath() {
         maskedImageView?.removeFromSuperview()
         maskedImageView = nil
@@ -530,22 +544,29 @@ extension MotionViewController: DrawableImageViewDelegate {
 
 //MARK: - ScrollView
 extension MotionViewController: UIScrollViewDelegate {
+    //returns the view that will be zoomed
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return drawableImageView
     }
     
+    //this function is called after every zoom
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        //re-arrange the content insets
         setContentInset(scrollView)
         guard let lastPoint = drawableImageView.touchPoints.last, let firstPoint = drawableImageView.pathPoints.first else {return}
+        //re-arrange the scissorView's center
         scissorView?.center = iDontKnowItsNameView.convert(lastPoint, from: drawableImageView)
+        //re-arrange the circleView's center
         circleView?.center = iDontKnowItsNameView.convert(firstPoint, from: drawableImageView)
+        //bring topContainer to front so the preView can be seen
         view.bringSubviewToFront(topContainer)
     }
     
+    //calculates and sets the insets for scrollView
     func setContentInset(_ scrollView: UIScrollView) {
         let imageViewSize = drawableImageView.frame.size
         let scrollViewSize = scrollView.bounds.size
-        
+        //calculate the vertical and horizontal paddings
         let verticalPadding = imageViewSize.height < scrollViewSize.height ? (scrollViewSize.height - imageViewSize.height) / 2 : 0
         let horizontalPadding = imageViewSize.width < scrollViewSize.width ? (scrollViewSize.width - imageViewSize.width) / 2 : 0
         // this is the distance that the content view is inset from the enclosing scroll view.

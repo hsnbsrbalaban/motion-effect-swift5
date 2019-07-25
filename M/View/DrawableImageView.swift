@@ -12,9 +12,11 @@ protocol DrawableImageViewDelegate {
     func createMaskedImageView(path: UIBezierPath)
     func createMotioningViews(lastPoint: CGPoint)
     func createScissorView(location: CGPoint)
+    func createCircleView(location: CGPoint)
     func previewTheTouchedPoint(touch: UITouch)
     func removePreviewImage()
     func removeScissorView()
+    func removeCircleView()
     func didTouchedOutsidePath()
     func isScissorContainsTouch(location: CGPoint) -> Bool
 }
@@ -140,6 +142,7 @@ class DrawableImageView: UIView {
             self.setNeedsDisplay()
             //preview the touched point
             self.delegate.previewTheTouchedPoint(touch: touch)
+            self.delegate.createCircleView(location: location)
         }
         else if motionState == .drawing {
             //if the user touched to scissor
@@ -149,6 +152,9 @@ class DrawableImageView: UIView {
             } else { //if the user touched somewhere else
                 //remove scissor
                 self.delegate.removeScissorView()
+                //remove circle
+                self.delegate.removeCircleView()
+                self.delegate.createCircleView(location: location)
                 //remove the pre-created views for motioning
                 self.delegate.didTouchedOutsidePath()
                 //clear the path
@@ -247,6 +253,8 @@ class DrawableImageView: UIView {
             //draw the touched point
             pathPoints.append(appendPoint(location: location))
             self.setNeedsDisplay()
+            //remove circle
+            self.delegate.removeCircleView()
             //remove the preview's image
             self.delegate.removePreviewImage()
             //create the masked view

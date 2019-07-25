@@ -138,6 +138,7 @@ class MotionViewController: UIViewController {
                 view.isHidden = true
             }
             drawableImageView.dashedLayer.isHidden = true
+            iDontKnowItsNameView.isHidden = true
         }
         else if pressedGR.state == .ended {
             maskedImageView?.isHidden = false
@@ -145,6 +146,7 @@ class MotionViewController: UIViewController {
                 view.isHidden = false
             }
             drawableImageView.dashedLayer.isHidden = false
+            iDontKnowItsNameView.isHidden = false
         }
     }
     

@@ -67,7 +67,7 @@ class DrawableImageView: UIView {
         self.addConstraints([centerXConstraint, centerYConstraint, widthConstraint, heightConstraint])
         
         dashedLayer.lineDashPattern = [8, 6]
-        dashedLayer.strokeColor = UIColor.black.cgColor
+        dashedLayer.strokeColor = UIColor.white.cgColor
         dashedLayer.fillColor = nil
         self.layer.addSublayer(dashedLayer)
         self.isMultipleTouchEnabled = true
@@ -105,16 +105,16 @@ class DrawableImageView: UIView {
         animation_0.toValue = dashedLayer.lineDashPattern?.reduce(0) { $0 - $1.intValue } ?? 0
         animation_0.duration = 1
         animation_0.repeatCount = .infinity
-        //line color change animation
-        let animation_1 = CABasicAnimation(keyPath: "strokeColor")
-        animation_1.fromValue = UIColor.black.cgColor
-        animation_1.toValue = UIColor.green.cgColor
-        animation_1.duration = 1
-        animation_1.autoreverses = true
-        animation_1.repeatCount = .infinity
+//        //line color change animation
+//        let animation_1 = CABasicAnimation(keyPath: "strokeColor")
+//        animation_1.fromValue = UIColor.black.cgColor
+//        animation_1.toValue = UIColor.green.cgColor
+//        animation_1.duration = 1
+//        animation_1.autoreverses = true
+//        animation_1.repeatCount = .infinity
         //add animations to the layer
         dashedLayer.add(animation_0, forKey: "dashedLineAnimation")
-        dashedLayer.add(animation_1, forKey: "lineColorAnimation")
+//        dashedLayer.add(animation_1, forKey: "lineColorAnimation")
     }
     
     //MARK: - Touch Handling

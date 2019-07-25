@@ -98,84 +98,84 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TbT-vQ-oiD" userLabel="Top Container">
-                                <rect key="frame" x="0.0" y="44" width="414" height="140"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9di-uF-RV1" userLabel="Top Button Container">
+                                <rect key="frame" x="0.0" y="44" width="414" height="52"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9di-uF-RV1" userLabel="Top Button Container">
-                                        <rect key="frame" x="0.0" y="0.0" width="414" height="52"/>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dRj-zZ-tYZ" userLabel="Discard Button">
+                                        <rect key="frame" x="8" y="8" width="44" height="44"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="44" id="C03-Zh-okR"/>
+                                            <constraint firstAttribute="height" constant="44" id="z8p-8B-YWx"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" image="discard"/>
+                                        <connections>
+                                            <action selector="discardButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="n0q-cA-DQY"/>
+                                        </connections>
+                                    </button>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xLx-6T-AMa">
+                                        <rect key="frame" x="159" y="8" width="96" height="44"/>
                                         <subviews>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="dRj-zZ-tYZ" userLabel="Discard Button">
-                                                <rect key="frame" x="8" y="8" width="44" height="44"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Oep-Bq-cMB" userLabel="Invisibile Button">
+                                                <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
                                                 <constraints>
-                                                    <constraint firstAttribute="width" constant="44" id="C03-Zh-okR"/>
-                                                    <constraint firstAttribute="height" constant="44" id="z8p-8B-YWx"/>
+                                                    <constraint firstAttribute="width" constant="44" id="dLg-A5-cvG"/>
+                                                    <constraint firstAttribute="height" constant="44" id="xqW-i3-ecB"/>
                                                 </constraints>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="normal" image="discard"/>
-                                                <connections>
-                                                    <action selector="discardButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="n0q-cA-DQY"/>
-                                                </connections>
+                                                <state key="normal" image="invisible"/>
                                             </button>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="xLx-6T-AMa">
-                                                <rect key="frame" x="159" y="8" width="96" height="44"/>
-                                                <subviews>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Oep-Bq-cMB" userLabel="Invisibile Button">
-                                                        <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="44" id="dLg-A5-cvG"/>
-                                                            <constraint firstAttribute="height" constant="44" id="xqW-i3-ecB"/>
-                                                        </constraints>
-                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <state key="normal" image="invisible"/>
-                                                    </button>
-                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DUe-iQ-MiO" userLabel="Refresh Button">
-                                                        <rect key="frame" x="52" y="0.0" width="44" height="44"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="width" constant="44" id="2M3-AL-lrq"/>
-                                                            <constraint firstAttribute="height" constant="44" id="KCB-ly-zIM"/>
-                                                        </constraints>
-                                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <state key="normal" image="repeat"/>
-                                                        <connections>
-                                                            <action selector="refreshButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="4PS-EX-T2M"/>
-                                                        </connections>
-                                                    </button>
-                                                </subviews>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DUe-iQ-MiO" userLabel="Refresh Button">
+                                                <rect key="frame" x="52" y="0.0" width="44" height="44"/>
                                                 <constraints>
-                                                    <constraint firstItem="DUe-iQ-MiO" firstAttribute="top" secondItem="xLx-6T-AMa" secondAttribute="top" id="6Sw-hi-cLS"/>
-                                                    <constraint firstAttribute="height" constant="44" id="Hjc-bb-9hQ"/>
-                                                    <constraint firstItem="Oep-Bq-cMB" firstAttribute="leading" secondItem="xLx-6T-AMa" secondAttribute="leading" id="LNu-tE-S6A"/>
-                                                    <constraint firstAttribute="width" constant="96" id="a8F-i4-Qzy"/>
-                                                    <constraint firstAttribute="trailing" secondItem="DUe-iQ-MiO" secondAttribute="trailing" id="lLi-jt-cMk"/>
-                                                    <constraint firstItem="Oep-Bq-cMB" firstAttribute="top" secondItem="xLx-6T-AMa" secondAttribute="top" id="zZz-97-IcF"/>
-                                                </constraints>
-                                            </view>
-                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ca0-Nb-ZTb" userLabel="Save Button">
-                                                <rect key="frame" x="362" y="8" width="44" height="44"/>
-                                                <constraints>
-                                                    <constraint firstAttribute="width" constant="44" id="IT4-x1-YL6"/>
-                                                    <constraint firstAttribute="height" constant="44" id="gdv-qj-37H"/>
+                                                    <constraint firstAttribute="width" constant="44" id="2M3-AL-lrq"/>
+                                                    <constraint firstAttribute="height" constant="44" id="KCB-ly-zIM"/>
                                                 </constraints>
                                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                <state key="normal" image="save"/>
+                                                <state key="normal" image="repeat"/>
                                                 <connections>
-                                                    <action selector="saveButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="lOA-VQ-0iv"/>
+                                                    <action selector="refreshButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="4PS-EX-T2M"/>
                                                 </connections>
                                             </button>
                                         </subviews>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstItem="dRj-zZ-tYZ" firstAttribute="leading" secondItem="9di-uF-RV1" secondAttribute="leading" constant="8" id="0Bp-rX-y5I"/>
-                                            <constraint firstItem="xLx-6T-AMa" firstAttribute="centerX" secondItem="9di-uF-RV1" secondAttribute="centerX" id="0wA-m3-Kkd"/>
-                                            <constraint firstItem="dRj-zZ-tYZ" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="Agj-3S-36G"/>
-                                            <constraint firstItem="xLx-6T-AMa" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="jdD-Q2-Pj9"/>
-                                            <constraint firstAttribute="trailing" secondItem="ca0-Nb-ZTb" secondAttribute="trailing" constant="8" id="lRG-O1-l2q"/>
-                                            <constraint firstItem="ca0-Nb-ZTb" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="mWd-Ar-ipM"/>
-                                            <constraint firstAttribute="height" constant="52" id="t2j-VF-seh"/>
+                                            <constraint firstItem="DUe-iQ-MiO" firstAttribute="top" secondItem="xLx-6T-AMa" secondAttribute="top" id="6Sw-hi-cLS"/>
+                                            <constraint firstAttribute="height" constant="44" id="Hjc-bb-9hQ"/>
+                                            <constraint firstItem="Oep-Bq-cMB" firstAttribute="leading" secondItem="xLx-6T-AMa" secondAttribute="leading" id="LNu-tE-S6A"/>
+                                            <constraint firstAttribute="width" constant="96" id="a8F-i4-Qzy"/>
+                                            <constraint firstAttribute="trailing" secondItem="DUe-iQ-MiO" secondAttribute="trailing" id="lLi-jt-cMk"/>
+                                            <constraint firstItem="Oep-Bq-cMB" firstAttribute="top" secondItem="xLx-6T-AMa" secondAttribute="top" id="zZz-97-IcF"/>
                                         </constraints>
                                     </view>
-                                    <view autoresizesSubviews="NO" clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m6O-PI-Mzf" userLabel="preview">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ca0-Nb-ZTb" userLabel="Save Button">
+                                        <rect key="frame" x="362" y="8" width="44" height="44"/>
+                                        <constraints>
+                                            <constraint firstAttribute="width" constant="44" id="IT4-x1-YL6"/>
+                                            <constraint firstAttribute="height" constant="44" id="gdv-qj-37H"/>
+                                        </constraints>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" image="save"/>
+                                        <connections>
+                                            <action selector="saveButton:" destination="7cp-ep-JJ8" eventType="touchUpInside" id="lOA-VQ-0iv"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="dRj-zZ-tYZ" firstAttribute="leading" secondItem="9di-uF-RV1" secondAttribute="leading" constant="8" id="0Bp-rX-y5I"/>
+                                    <constraint firstItem="xLx-6T-AMa" firstAttribute="centerX" secondItem="9di-uF-RV1" secondAttribute="centerX" id="0wA-m3-Kkd"/>
+                                    <constraint firstItem="dRj-zZ-tYZ" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="Agj-3S-36G"/>
+                                    <constraint firstItem="xLx-6T-AMa" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="jdD-Q2-Pj9"/>
+                                    <constraint firstAttribute="trailing" secondItem="ca0-Nb-ZTb" secondAttribute="trailing" constant="8" id="lRG-O1-l2q"/>
+                                    <constraint firstItem="ca0-Nb-ZTb" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="top" constant="8" id="mWd-Ar-ipM"/>
+                                    <constraint firstAttribute="height" constant="52" id="t2j-VF-seh"/>
+                                </constraints>
+                            </view>
+                            <view userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="TbT-vQ-oiD" userLabel="Top Container">
+                                <rect key="frame" x="0.0" y="44" width="414" height="140"/>
+                                <subviews>
+                                    <view autoresizesSubviews="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="m6O-PI-Mzf" userLabel="preview">
                                         <rect key="frame" x="8" y="60" width="80" height="80"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
@@ -186,12 +186,9 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
-                                    <constraint firstItem="9di-uF-RV1" firstAttribute="leading" secondItem="TbT-vQ-oiD" secondAttribute="leading" id="9mW-sn-E6y"/>
                                     <constraint firstAttribute="height" constant="140" id="A5w-aw-EzZ"/>
-                                    <constraint firstItem="m6O-PI-Mzf" firstAttribute="top" secondItem="9di-uF-RV1" secondAttribute="bottom" constant="8" id="HTk-oR-ZV2"/>
+                                    <constraint firstAttribute="bottom" secondItem="m6O-PI-Mzf" secondAttribute="bottom" id="SGZ-9B-Ozm"/>
                                     <constraint firstItem="m6O-PI-Mzf" firstAttribute="leading" secondItem="TbT-vQ-oiD" secondAttribute="leading" constant="8" id="rZq-B6-6Lo"/>
-                                    <constraint firstItem="9di-uF-RV1" firstAttribute="width" secondItem="TbT-vQ-oiD" secondAttribute="width" id="vHW-ha-VlX"/>
-                                    <constraint firstItem="9di-uF-RV1" firstAttribute="top" secondItem="TbT-vQ-oiD" secondAttribute="top" id="yMC-Jv-gxa"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="pk7-5J-QTe" userLabel="Menu Placement">
@@ -331,8 +328,11 @@
                         <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="TbT-vQ-oiD" firstAttribute="width" secondItem="xjR-5g-uSP" secondAttribute="width" id="0nD-OO-efS"/>
+                            <constraint firstItem="9di-uF-RV1" firstAttribute="leading" secondItem="EZ0-yF-j1Z" secondAttribute="leading" id="0nY-e3-gTl"/>
                             <constraint firstItem="pk7-5J-QTe" firstAttribute="leading" secondItem="EZ0-yF-j1Z" secondAttribute="leading" id="3fw-hS-20P"/>
+                            <constraint firstItem="9di-uF-RV1" firstAttribute="width" secondItem="xjR-5g-uSP" secondAttribute="width" id="ACc-JW-ECH"/>
                             <constraint firstItem="TbT-vQ-oiD" firstAttribute="top" secondItem="EZ0-yF-j1Z" secondAttribute="top" id="J3u-ki-goc"/>
+                            <constraint firstItem="9di-uF-RV1" firstAttribute="top" secondItem="TbT-vQ-oiD" secondAttribute="top" id="Mww-qP-0Q8"/>
                             <constraint firstItem="pk7-5J-QTe" firstAttribute="bottom" secondItem="EZ0-yF-j1Z" secondAttribute="bottom" id="byB-2A-QLv"/>
                             <constraint firstItem="FIo-P0-sfw" firstAttribute="top" secondItem="pk7-5J-QTe" secondAttribute="top" id="gxy-cE-o3c"/>
                             <constraint firstItem="FIo-P0-sfw" firstAttribute="leading" secondItem="pk7-5J-QTe" secondAttribute="leading" id="pJ4-Ml-fSN"/>

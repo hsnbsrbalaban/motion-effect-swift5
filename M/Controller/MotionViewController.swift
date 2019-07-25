@@ -38,7 +38,7 @@ class MotionViewController: UIViewController {
     var motionImageAlpha: Int = 100
     var motionUIArray = [UIImageView]()
     
-    var frameSizeConstant: CGFloat!
+    var frameSizeConstant: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -157,7 +157,7 @@ class MotionViewController: UIViewController {
         imageCountLabel.text = String(format: "%.0f", imageCountSlider.value)
         motionImageCount = Int(imageCountSlider.value)
         
-        if maskedImageView == nil { return }
+        guard let maskedImageView = self.maskedImageView else { return }
         
         var currVal = motionUIArray.count
         
@@ -179,7 +179,7 @@ class MotionViewController: UIViewController {
                 
                 motionUIArray.append(tempView)
                 drawableImageView.addSubview(tempView)
-                drawableImageView.bringSubviewToFront(maskedImageView!)
+                drawableImageView.bringSubviewToFront(maskedImageView)
                 
                 currVal += 1
             }
@@ -263,7 +263,8 @@ extension MotionViewController: DrawableImageViewDelegate {
         location.x = min(drawableImageView.frame.width - 40, max(location.x, 40))
         location.y = min(drawableImageView.frame.height - 40, max(location.y, 40))
         
-        let diff = CGPoint(x: location.x - drawableImageView.center.x, y: location.y - drawableImageView.center.y)
+        let scaledCenter: CGPoint = CGPoint(x: drawableImageView.center.x / scrollView.zoomScale, y: drawableImageView.center.y / scrollView.zoomScale)
+        let diff = CGPoint(x: location.x - scaledCenter.x, y: location.y - scaledCenter.y)
         tempImageView?.center = CGPoint(x: preView.frame.width / 2 - diff.x, y: preView.frame.height / 2 - diff.y)
     }
     
@@ -299,12 +300,12 @@ extension MotionViewController: DrawableImageViewDelegate {
         maskedImageView = UIImageView(frame: rect)
         maskedImageView?.image = imageView.image
         maskedImageView?.isUserInteractionEnabled = false
-        
+
         let maskLayer = CAShapeLayer()
         maskLayer.frame = CGRect(origin: .zero, size: rect.size)
         maskLayer.path = path.cgPath
         maskedImageView?.layer.mask = maskLayer
-        
+
         drawableImageView.addSubview(maskedImageView!)
     }
     
@@ -319,7 +320,7 @@ extension MotionViewController: DrawableImageViewDelegate {
             guard let p1 = drawableImageView.pathPoints.last else { return }
             let p2 = drawableImageView.pathPoints[drawableImageView.pathPoints.count - 2]
             
-            let angle: CGFloat!
+            var angle: CGFloat = 0
             if p2.x - p1.x > 0 {
                 angle = atan((p2.y - p1.y) / (p2.x - p1.x)) - CGFloat.pi / 180 * 90
             }
@@ -363,7 +364,7 @@ extension MotionViewController {
     //creates, relocates the views
     func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
         
-        guard let imageView = drawableImageView.imageView, let path = drawableImageView.path else { return }
+        guard let imageView = drawableImageView.imageView, let path = drawableImageView.path, let maskedImageView = self.maskedImageView else { return }
         
         let sPx = path.bounds.origin.x + path.bounds.width / 2
         let sPy = path.bounds.origin.y + path.bounds.height / 2
@@ -390,7 +391,7 @@ extension MotionViewController {
                     motionUIArray.append(tempView)
                     drawableImageView.addSubview(tempView)
 
-                    drawableImageView.bringSubviewToFront(maskedImageView!)
+                    drawableImageView.bringSubviewToFront(maskedImageView)
                 } else {
                     let curView = motionUIArray[i]
                     curView.center = CGPoint(x: centerX, y: centerY)

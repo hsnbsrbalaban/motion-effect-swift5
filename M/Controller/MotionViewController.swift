@@ -27,20 +27,34 @@ class MotionViewController: UIViewController {
     @IBOutlet weak var invisibleButton: UIButton!
     @IBOutlet weak var preView: UIView!
     
+    //image that will be used for motion
     var image: UIImage!
+    //imageView that contains the image
     var drawableImageView: DrawableImageView!
+    //scrollView is used for zoom in/out. contains drawableImageView
     var scrollView: UIScrollView!
+    //this view contains the scissor and circle
     var iDontKnowItsNameView: UIView!
+    //this image view contains the masked image
     var maskedImageView: UIImageView?
+    //will be initialized when drawing interrupted. contains a scissor image
     var scissorView: UIImageView?
+    //will be initialized when a new drawing occurs. contains a full circle image
     var circleView: UIImageView?
+    //this image view is used for the showing the preview of the touched point
     var tempImageView: UIImageView?
     
+    //can be changed by count slider
     var motionImageCount: Int = 10
+    //can be changed by opacity slider
     var motionImageAlpha: Int = 100
+    //contains the image views for motion effect
     var motionUIArray = [UIImageView]()
     
+    //if the preview is on the left side: 0
+    //if the preview is on the right side : 1
     var previewState: Int = 0
+    //the ratio that is used for fitting the image to screen
     var frameSizeConstant: CGFloat = 0
     
     override func viewDidLoad() {
@@ -49,13 +63,16 @@ class MotionViewController: UIViewController {
         setInitialScreen()
         
         // Menu part
+        //makes the arrow button circular
         darkFillingView.layer.cornerRadius = darkFillingView.frame.width / 2
-        imageCountLabel.text = String(format: "%.0f", imageCountSlider.value)
+        //makes the count menu invisible
         imageCountView.alpha = 0
+        //makes the opacity menu invisible
         opacityView.alpha = 0
         
         // Invisible button gesture recognizer
         let pressedGR = UILongPressGestureRecognizer(target: self, action: #selector(invisibleButtonPressed(_:)))
+        //sets the minimumPressDuration feature
         pressedGR.minimumPressDuration = 0.01
         invisibleButton.addGestureRecognizer(pressedGR)
     }
@@ -77,61 +94,84 @@ class MotionViewController: UIViewController {
         scrollView.maximumZoomScale = 5
         scrollView.zoomScale = 1
         scrollView.delegate = self
+        //remove panGestureRecognizer from the scrollView to allow drawing a path on it
         scrollView.removeGestureRecognizer(scrollView.panGestureRecognizer)
         
+        //initialize drawableImageView
         drawableImageView = DrawableImageView(frame: frame)
         drawableImageView.clipsToBounds = true
-        // Set the image of imageView
+        //set the image of imageView
         drawableImageView.imageView?.image = image
+        //set its delegate to self
         drawableImageView.delegate = self
         
-        // This view is used for keeping the scissor inside the scrollview bounds
+        //initialize iDontKnowItsNameView
         iDontKnowItsNameView = UIView(frame: scrollView.frame)
         iDontKnowItsNameView.center = scrollView.center
         iDontKnowItsNameView.clipsToBounds = true
         iDontKnowItsNameView.backgroundColor = UIColor.clear
         iDontKnowItsNameView.isUserInteractionEnabled = false
         
+        //add drawableImageView to scrollView
         scrollView.addSubview(drawableImageView)
+        //add scrollView and iDontKnowItsNameView to screen
         self.view.insertSubview(scrollView, at: 0)
         self.view.insertSubview(iDontKnowItsNameView, at: 0)
         
+        //set the content insets of the scrollView
         setContentInset(scrollView)
         
+        //initialize tempImageView
         tempImageView = UIImageView(frame: drawableImageView.frame)
         tempImageView?.isUserInteractionEnabled = false
         tempImageView?.center = CGPoint(x: preView.frame.width / 2, y: preView.frame.height / 2)
         
         guard let tempImageView = tempImageView else { return }
         
+        //add tempImageView to preView
         preView.addSubview(tempImageView)
     }
     
+    //creates an alert controller and asks the user if s/he wants to discard changes and go back
     @IBAction func discardButton(_ sender: UIButton) {
+        //declare and initialize the alertController
         let alertController = UIAlertController(title: "Discard changes?", message: nil, preferredStyle: .alert)
+        //add "yep" action to alertController
         alertController.addAction(UIAlertAction(title: "Yep", style: .default, handler: { ctx in
             self.dismiss(animated: true, completion: nil)
         }))
+        //add "cancel" action to alertController
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+        //present the alertController
         self.present(alertController, animated: true, completion: nil)
     }
 
+    //creates an alert controller and asks the user if s/he wants to save the image
     @IBAction func saveButton(_ sender: UIButton) {
+        //declare and initialize the alertController
         let alertController = UIAlertController(title: "Save image?", message: nil, preferredStyle: .alert)
+        //add "yep" action to alertController
         alertController.addAction(UIAlertAction(title: "Yep", style: .default, handler: { ctx in
+            //remove the drawed path
             self.drawableImageView.dashedLayer.removeFromSuperlayer()
+            //take screen shot of the drawableImageView
             let imageData = self.captureScreenshot(view: self.drawableImageView)
+            //save the image to photos album
             UIImageWriteToSavedPhotosAlbum(imageData, nil, nil, nil)
+            //add the drawed path again
             self.drawableImageView.layer.addSublayer(self.drawableImageView.dashedLayer)
+            //stop animations of the path
             self.drawableImageView.dashedLayer.removeAllAnimations()
         }))
+        //add "cancel" action to alertController
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+        //present the alertController
         self.present(alertController, animated: true, completion: nil)
     }
-
+    
+    //UILongPressGestureRecognizer handler for invisibleButton
     @objc func invisibleButtonPressed(_ pressedGR: UILongPressGestureRecognizer) {
+        //when the press begins, hide all the content that is created
         if pressedGR.state == .began {
             maskedImageView?.isHidden = true
             for view in motionUIArray {
@@ -139,7 +179,7 @@ class MotionViewController: UIViewController {
             }
             drawableImageView.dashedLayer.isHidden = true
             iDontKnowItsNameView.isHidden = true
-        }
+        } //when the press ends, make invisible all the content that is created
         else if pressedGR.state == .ended {
             maskedImageView?.isHidden = false
             for view in motionUIArray {
@@ -150,73 +190,86 @@ class MotionViewController: UIViewController {
         }
     }
     
+    //removes all changes and refresh the screen to its original condition
     @IBAction func refreshButton(_ sender: UIButton) {
-        
+        //remove scissorView
         if scissorView != nil {
             removeScissorView()
         }
-        
+        //remove circleView
         if circleView != nil {
             removeCircleView()
         }
-        
+        //remove all the created views for motion effect
         didTouchedOutsidePath()
-        
+        //remove the path
         drawableImageView.path?.removeAllPoints()
         drawableImageView.pathPoints.removeAll()
         drawableImageView.dashedLayer.path = nil
         drawableImageView.setNeedsDisplay()
-        
+        //set motionstate to initial
         drawableImageView.motionState = .initial
-        
+        //set scrollView's zoomScale to default
         scrollView.zoomScale = 1
-        
+        //set preView's frame to default
         self.preView.frame = CGRect(x: 8, y: self.preView.frame.minY, width: 80, height: 80)
+        //set previewState to default
         previewState = 0
     }
     
-    
+    //updates the count label and creates/deletes views from motionUIArray according to slider's current value
     @IBAction func countSliderF(_ sender: UISlider) {
+        //update imageCountLabel
         imageCountLabel.text = String(format: "%.0f", imageCountSlider.value)
+        //update motionImageCount
         motionImageCount = Int(imageCountSlider.value)
         
         guard let maskedImageView = self.maskedImageView else { return }
         
         var currVal = motionUIArray.count
-        
+        //if the value of the slider is decreased, delete views from the motionUIArray
         if Int(sender.value) < currVal {
+            //remove views until the length of the array becomes equal to slider's value
             while Int(sender.value) != currVal {
                 motionUIArray.last?.removeFromSuperview()
                 motionUIArray.removeLast()
-                
+                //update current value
                 currVal -= 1
             }
-        } else {
+        } else { // if the value of the slider is increased, create new views and add them to motionUIArray
+            //create views until the length of the arrat becomes equal to slider's value
             while Int(sender.value) != currVal {
                 guard let imageView = drawableImageView.imageView, let path = drawableImageView.path else { return }
+                //declare and initialize a new view
                 let tempView = UIImageView(frame: imageView.frame)
                 tempView.image = imageView.image
                 tempView.isUserInteractionEnabled = false
-                
+                //mask the new view according to drawableImageView's path
                 maskView(tempView: tempView, path: path)
-                
+                //add the new view to motionUIArray
                 motionUIArray.append(tempView)
+                //add the new view to tempView
                 drawableImageView.addSubview(tempView)
+                //bring the original masked view to front
                 drawableImageView.bringSubviewToFront(maskedImageView)
-                
+                //update the current value
                 currVal += 1
             }
         }
         guard let lastPoint = drawableImageView.touchPoints.last else { return }
+        //update each view's center according to last point
         viewHandler(lastPoint: lastPoint, isNew: false, sender: "slider")
     }
     
+    //updates the opacity label and alpha values of all views inside motionUIArray
     @IBAction func opacitySliderF(_ sender: UISlider) {
+        //update the opacity label
         opacityLabel.text = String(format: "%.0f", opacitySlider.value)
+        //update the motionImageAlpha
         motionImageAlpha = Int(opacitySlider.value)
         
         if maskedImageView == nil { return }
-        
+        //update alpha of every view inside motionUIArray
         var i: Int = 0
         for view in motionUIArray {
             view.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
@@ -226,6 +279,7 @@ class MotionViewController: UIViewController {
     }
     
     //MARK: - Menu Animations
+    
     @IBOutlet weak var menuView: UIView!
     @IBOutlet weak var darkFillingView: UIView!
     @IBOutlet weak var toggleMenuButton: UIButton!
@@ -258,6 +312,98 @@ class MotionViewController: UIViewController {
                 self.menuView.transform = .identity
                 self.imageCountView.alpha = 0
                 self.opacityView.alpha = 0
+            }
+        }
+    }
+    
+    //MARK: - Helper Functions
+    
+    //creates, relocates the views
+    func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
+        
+        guard let imageView = drawableImageView.imageView, let path = drawableImageView.path, let maskedImageView = self.maskedImageView else { return }
+        //calculate the start points
+        let sPx = path.bounds.origin.x + path.bounds.width / 2
+        let sPy = path.bounds.origin.y + path.bounds.height / 2
+        
+        for i in 0..<motionImageCount {
+            //calculate center for the current view
+            let diffX = (lastPoint.x - sPx) / CGFloat(motionImageCount)
+            let centerX = imageView.center.x + (CGFloat(i) + 1) * diffX
+            let diffY = (lastPoint.y - sPy) / CGFloat(motionImageCount)
+            let centerY = imageView.center.y + (CGFloat(i) + 1) * diffY
+            //if the caller is touch
+            if sender == "touch" {
+                if isNew { //if a new view will be created
+                    //initialize a new view
+                    let tempView = UIImageView(frame: imageView.frame)
+                    tempView.isUserInteractionEnabled = false
+                    tempView.image = imageView.image
+                    tempView.center = CGPoint(x: centerX, y: centerY)
+                    //take the path and mask the new view
+                    guard let path = drawableImageView.path else { return }
+                    maskView(tempView: tempView, path: path)
+                    //calculate and set its alpha
+                    tempView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
+                    //append it to motionUIArray
+                    motionUIArray.append(tempView)
+                    //add it ti screen
+                    drawableImageView.addSubview(tempView)
+                    //bring the original masked view to front
+                    drawableImageView.bringSubviewToFront(maskedImageView)
+                } else { //if the user motioning
+                    //take the current view from motionUIArray
+                    let curView = motionUIArray[i]
+                    //set its center to calculated center
+                    curView.center = CGPoint(x: centerX, y: centerY)
+                }
+            } else { //if the caller is slider
+                //take the current view from motionUIArray
+                let curView = motionUIArray[i]
+                //calculate and set its alpha
+                curView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
+                //set its center to calculated center
+                curView.center = CGPoint(x: centerX, y: centerY)
+            }
+        }
+    }
+    
+    //masks the given view according to path
+    func maskView(tempView: UIImageView, path: UIBezierPath) {
+        //take the imageView
+        guard let imageView = drawableImageView.imageView else { return }
+        let rect: CGRect = imageView.frame
+        //create a CAShapeLayer
+        let maskLayer = CAShapeLayer()
+        maskLayer.frame = CGRect(origin: .zero, size: rect.size)
+        //set the path of maskLayer to drawableImageView's path
+        maskLayer.path = path.cgPath
+        //mask the layer
+        tempView.layer.mask = maskLayer
+    }
+    
+    //returns a screenshot of the given view
+    func captureScreenshot(view: UIView) -> UIImage {
+        return UIImage(view: view, scale: UIScreen.main.scale)
+    }
+    
+    //checks if the currently touched point is inside the pathView
+    func checkPreview(location: CGPoint) {
+        //if the pathView contains the touched point, change its position
+        if preView.frame.contains(topContainer.convert(location, from: drawableImageView)) {
+            //if the preview is on the left side, change its from so that it will be on the right side after animation
+            if previewState == 0 {
+                UIView.animate(withDuration: 0.05) {
+                    self.preView.frame = CGRect(x: self.view.frame.width - 88, y: self.preView.frame.minY, width: 80, height: 80)
+                }
+                //update the previewState
+                previewState = 1
+            } else { //if the preview is on the right side, change its from so that it will be on the left side after animation
+                UIView.animate(withDuration: 0.05) {
+                    self.preView.frame = CGRect(x: 8, y: self.preView.frame.minY, width: 80, height: 80)
+                }
+                //update the previewState
+                previewState = 0
             }
         }
     }
@@ -342,8 +488,24 @@ extension MotionViewController: DrawableImageViewDelegate {
         circleView = nil
     }
     
+    func createMaskedImageView(path: UIBezierPath) {
+        guard let imageView = drawableImageView.imageView else { return }
+        let rect: CGRect = imageView.frame
+        
+        maskedImageView = UIImageView(frame: rect)
+        maskedImageView?.image = imageView.image
+        maskedImageView?.isUserInteractionEnabled = false
+        
+        let maskLayer = CAShapeLayer()
+        maskLayer.frame = CGRect(origin: .zero, size: rect.size)
+        maskLayer.path = path.cgPath
+        maskedImageView?.layer.mask = maskLayer
+        
+        guard let tempView = maskedImageView else { return }
+        
+        drawableImageView.addSubview(tempView)
+    }
     
-
     func createMotioningViews(lastPoint: CGPoint) {
         if motionUIArray.isEmpty {
             viewHandler(lastPoint: lastPoint, isNew: true, sender: "touch")
@@ -363,24 +525,6 @@ extension MotionViewController: DrawableImageViewDelegate {
             item.removeFromSuperview()
         }
         motionUIArray.removeAll()
-    }
-    
-    func createMaskedImageView(path: UIBezierPath) {
-        guard let imageView = drawableImageView.imageView else { return }
-        let rect: CGRect = imageView.frame
-        
-        maskedImageView = UIImageView(frame: rect)
-        maskedImageView?.image = imageView.image
-        maskedImageView?.isUserInteractionEnabled = false
-
-        let maskLayer = CAShapeLayer()
-        maskLayer.frame = CGRect(origin: .zero, size: rect.size)
-        maskLayer.path = path.cgPath
-        maskedImageView?.layer.mask = maskLayer
-        
-        guard let tempView = maskedImageView else { return }
-
-        drawableImageView.addSubview(tempView)
     }
 }
 
@@ -406,82 +550,5 @@ extension MotionViewController: UIScrollViewDelegate {
         let horizontalPadding = imageViewSize.width < scrollViewSize.width ? (scrollViewSize.width - imageViewSize.width) / 2 : 0
         // this is the distance that the content view is inset from the enclosing scroll view.
         scrollView.contentInset = UIEdgeInsets(top: verticalPadding, left: horizontalPadding, bottom: verticalPadding, right: horizontalPadding)
-    }
-}
-
-//MARK: - Helper Functions
-extension MotionViewController {
-    //creates, relocates the views
-    func viewHandler(lastPoint: CGPoint, isNew: Bool, sender: String) {
-        
-        guard let imageView = drawableImageView.imageView, let path = drawableImageView.path, let maskedImageView = self.maskedImageView else { return }
-        
-        let sPx = path.bounds.origin.x + path.bounds.width / 2
-        let sPy = path.bounds.origin.y + path.bounds.height / 2
-        
-        for i in 0..<motionImageCount {
-            
-            let diffX = (lastPoint.x - sPx) / CGFloat(motionImageCount)
-            let centerX = imageView.center.x + (CGFloat(i) + 1) * diffX
-            let diffY = (lastPoint.y - sPy) / CGFloat(motionImageCount)
-            let centerY = imageView.center.y + (CGFloat(i) + 1) * diffY
-            
-            if sender == "touch" {
-                if isNew {
-                    let tempView = UIImageView(frame: imageView.frame)
-                    tempView.isUserInteractionEnabled = false
-                    tempView.image = imageView.image
-                    tempView.center = CGPoint(x: centerX, y: centerY)
-                    
-                    guard let path = drawableImageView.path else { return }
-                    maskView(tempView: tempView, path: path)
-
-                    tempView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
-
-                    motionUIArray.append(tempView)
-                    drawableImageView.addSubview(tempView)
-
-                    drawableImageView.bringSubviewToFront(maskedImageView)
-                } else {
-                    let curView = motionUIArray[i]
-                    curView.center = CGPoint(x: centerX, y: centerY)
-                }
-            } else {
-                let curView = motionUIArray[i]
-
-                curView.alpha = CGFloat(1 - 0.9 / Double(motionImageCount) * Double(i))
-                curView.center = CGPoint(x: centerX, y: centerY)
-            }
-        }
-    }
-    
-    //masks the given view according to path
-    func maskView(tempView: UIImageView, path: UIBezierPath) {
-        guard let imageView = drawableImageView.imageView else { return }
-        let rect: CGRect = imageView.frame
-        let maskLayer = CAShapeLayer()
-        maskLayer.frame = CGRect(origin: .zero, size: rect.size)
-        maskLayer.path = path.cgPath
-        tempView.layer.mask = maskLayer
-    }
-    
-    func captureScreenshot(view: UIView) -> UIImage {
-        return UIImage(view: view, scale: UIScreen.main.scale)
-    }
-    
-    func checkPreview(location: CGPoint) {
-        if preView.frame.contains(topContainer.convert(location, from: drawableImageView)) {
-            if previewState == 0 {
-                UIView.animate(withDuration: 0.05) {
-                    self.preView.frame = CGRect(x: self.view.frame.width - 88, y: self.preView.frame.minY, width: 80, height: 80)
-                }
-                previewState = 1
-            } else {
-                UIView.animate(withDuration: 0.05) {
-                    self.preView.frame = CGRect(x: 8, y: self.preView.frame.minY, width: 80, height: 80)
-                }
-                previewState = 0
-            }
-        }
     }
 }

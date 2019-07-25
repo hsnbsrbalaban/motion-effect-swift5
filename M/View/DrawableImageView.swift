@@ -65,7 +65,7 @@ class DrawableImageView: UIView {
                                                   relatedBy: NSLayoutConstraint.Relation.equal, toItem: self,
                                                   attribute: NSLayoutConstraint.Attribute.height, multiplier: 1, constant: 0)
         self.addConstraints([centerXConstraint, centerYConstraint, widthConstraint, heightConstraint])
-        
+        //initiliaze the dashedLayer
         dashedLayer.lineDashPattern = [8, 6]
         dashedLayer.strokeColor = UIColor.white.cgColor
         dashedLayer.fillColor = nil
@@ -105,24 +105,12 @@ class DrawableImageView: UIView {
         animation_0.toValue = dashedLayer.lineDashPattern?.reduce(0) { $0 - $1.intValue } ?? 0
         animation_0.duration = 1
         animation_0.repeatCount = .infinity
-//        //line color change animation
-//        let animation_1 = CABasicAnimation(keyPath: "strokeColor")
-//        animation_1.fromValue = UIColor.black.cgColor
-//        animation_1.toValue = UIColor.green.cgColor
-//        animation_1.duration = 1
-//        animation_1.autoreverses = true
-//        animation_1.repeatCount = .infinity
-        //add animations to the layer
+        
         dashedLayer.add(animation_0, forKey: "dashedLineAnimation")
-//        dashedLayer.add(animation_1, forKey: "lineColorAnimation")
     }
     
     //MARK: - Touch Handling
     var motionState: States = .initial
-    
-    func touchCount(_ event: UIEvent?) -> Int {
-        return (event?.touches(for: self)?.count)!
-    }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if touchCount(event) > 1 {
@@ -269,10 +257,17 @@ class DrawableImageView: UIView {
         touchPoints.append(location)
     }
     
+    //returns the number of touches
+    func touchCount(_ event: UIEvent?) -> Int {
+        return (event?.touches(for: self)?.count)!
+    }
+    
+    //returns the distance between two points
     func distance(_ a: CGPoint, _ b: CGPoint) -> Float {
         return hypotf(Float(a.x - b.x), Float(a.y - b.y))
     }
     
+    //checks the given point and traps it into imageView
     func appendPoint(location: CGPoint) -> CGPoint{
         guard let imageView = imageView else {return CGPoint(x: 0, y: 0)}
         

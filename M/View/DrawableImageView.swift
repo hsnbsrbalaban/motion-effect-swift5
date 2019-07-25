@@ -184,6 +184,7 @@ class DrawableImageView: UIView {
                 self.setNeedsDisplay()
                 //preview the touched point
                 self.delegate.previewTheTouchedPoint(touch: touch)
+                self.delegate.createCircleView(location: location)
             }
         }
         else if motionState == .motioned {
@@ -202,6 +203,7 @@ class DrawableImageView: UIView {
                 self.setNeedsDisplay()
                 //preview the touched point
                 self.delegate.previewTheTouchedPoint(touch: touch)
+                self.delegate.createCircleView(location: location)
             }
         }
         touchPoints.removeAll()

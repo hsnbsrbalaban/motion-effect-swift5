@@ -40,6 +40,7 @@ class MotionViewController: UIViewController {
     var motionImageAlpha: Int = 100
     var motionUIArray = [UIImageView]()
     
+    var previewState: Int = 0
     var frameSizeConstant: CGFloat = 0
     
     override func viewDidLoad() {
@@ -99,8 +100,11 @@ class MotionViewController: UIViewController {
         
         tempImageView = UIImageView(frame: drawableImageView.frame)
         tempImageView?.isUserInteractionEnabled = false
-        preView.addSubview(tempImageView!)
         tempImageView?.center = CGPoint(x: preView.frame.width / 2, y: preView.frame.height / 2)
+        
+        guard let tempImageView = tempImageView else { return }
+        
+        preView.addSubview(tempImageView)
     }
     
     @IBAction func discardButton(_ sender: UIButton) {
@@ -164,6 +168,9 @@ class MotionViewController: UIViewController {
         drawableImageView.motionState = .initial
         
         scrollView.zoomScale = 1
+        
+        self.preView.frame = CGRect(x: 8, y: self.preView.frame.minY, width: 80, height: 80)
+        previewState = 0
     }
     
     
@@ -265,6 +272,8 @@ extension MotionViewController: DrawableImageViewDelegate {
         
         var location = touch.location(in: drawableImageView)
         
+        checkPreview(location: location)
+        
         location.x = min(drawableImageView.frame.width - 40, max(location.x, 40))
         location.y = min(drawableImageView.frame.height - 40, max(location.y, 40))
         
@@ -298,7 +307,9 @@ extension MotionViewController: DrawableImageViewDelegate {
             
             scissorView?.transform = CGAffineTransform(rotationAngle: angle)
             
-            self.iDontKnowItsNameView.addSubview(scissorView!)
+            guard let tempView = scissorView else { return }
+            
+            self.iDontKnowItsNameView.addSubview(tempView)
             self.view.bringSubviewToFront(iDontKnowItsNameView)
         }
     }
@@ -318,7 +329,9 @@ extension MotionViewController: DrawableImageViewDelegate {
         circleView?.tintColor = UIColor.white
         circleView?.center = iDontKnowItsNameView.convert(location, from: drawableImageView)
         
-        self.iDontKnowItsNameView.addSubview(circleView!)
+        guard let tempView = circleView else { return }
+        
+        self.iDontKnowItsNameView.addSubview(tempView)
         self.view.bringSubviewToFront(iDontKnowItsNameView)
     }
     
@@ -362,8 +375,10 @@ extension MotionViewController: DrawableImageViewDelegate {
         maskLayer.frame = CGRect(origin: .zero, size: rect.size)
         maskLayer.path = path.cgPath
         maskedImageView?.layer.mask = maskLayer
+        
+        guard let tempView = maskedImageView else { return }
 
-        drawableImageView.addSubview(maskedImageView!)
+        drawableImageView.addSubview(tempView)
     }
 }
 
@@ -375,7 +390,7 @@ extension MotionViewController: UIScrollViewDelegate {
     
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         setContentInset(scrollView)
-        guard let lastPoint = drawableImageView.touchPoints.last, let firstPoint = drawableImageView.touchPoints.first else {return}
+        guard let lastPoint = drawableImageView.touchPoints.last, let firstPoint = drawableImageView.pathPoints.first else {return}
         scissorView?.center = iDontKnowItsNameView.convert(lastPoint, from: drawableImageView)
         circleView?.center = iDontKnowItsNameView.convert(firstPoint, from: drawableImageView)
         view.bringSubviewToFront(topContainer)
@@ -437,6 +452,7 @@ extension MotionViewController {
             }
         }
     }
+    
     //masks the given view according to path
     func maskView(tempView: UIImageView, path: UIBezierPath) {
         guard let imageView = drawableImageView.imageView else { return }
@@ -449,5 +465,21 @@ extension MotionViewController {
     
     func captureScreenshot(view: UIView) -> UIImage {
         return UIImage(view: view, scale: UIScreen.main.scale)
+    }
+    
+    func checkPreview(location: CGPoint) {
+        if preView.frame.contains(topContainer.convert(location, from: drawableImageView)) {
+            if previewState == 0 {
+                UIView.animate(withDuration: 0.05) {
+                    self.preView.frame = CGRect(x: self.view.frame.width - 88, y: self.preView.frame.minY, width: 80, height: 80)
+                }
+                previewState = 1
+            } else {
+                UIView.animate(withDuration: 0.05) {
+                    self.preView.frame = CGRect(x: 8, y: self.preView.frame.minY, width: 80, height: 80)
+                }
+                previewState = 0
+            }
+        }
     }
 }

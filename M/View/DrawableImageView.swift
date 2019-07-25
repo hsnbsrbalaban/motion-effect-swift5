@@ -146,7 +146,7 @@ class DrawableImageView: UIView {
             if self.delegate.isScissorContainsTouch(location: location) {
                 //remove scissor
                 self.delegate.removeScissorView()
-            } else { //if the user touched someone else
+            } else { //if the user touched somewhere else
                 //remove scissor
                 self.delegate.removeScissorView()
                 //remove the pre-created views for motioning

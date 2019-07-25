@@ -30,6 +30,7 @@ class MotionViewController: UIViewController {
     var image: UIImage!
     var drawableImageView: DrawableImageView!
     var scrollView: UIScrollView!
+    var iDontKnowItsNameView: UIView!
     var maskedImageView: UIImageView?
     var scissorView: UIImageView?
     var tempImageView: UIImageView?
@@ -82,8 +83,16 @@ class MotionViewController: UIViewController {
         drawableImageView.imageView?.image = image
         drawableImageView.delegate = self
         
+        // This view is used for keeping the scissor inside the scrollview bounds
+        iDontKnowItsNameView = UIView(frame: scrollView.frame)
+        iDontKnowItsNameView.center = scrollView.center
+        iDontKnowItsNameView.clipsToBounds = true
+        iDontKnowItsNameView.backgroundColor = UIColor.clear
+        iDontKnowItsNameView.isUserInteractionEnabled = false
+        
         scrollView.addSubview(drawableImageView)
         self.view.insertSubview(scrollView, at: 0)
+        self.view.insertSubview(iDontKnowItsNameView, at: 0)
         
         setContentInset(scrollView)
         
@@ -249,7 +258,7 @@ extension MotionViewController: DrawableImageViewDelegate {
     
     func isScissorContainsTouch(location: CGPoint) -> Bool {
         guard let frame = scissorView?.frame else { return false }
-        return frame.contains(view.convert(location, from: drawableImageView))
+        return frame.contains(iDontKnowItsNameView.convert(location, from: drawableImageView))
     }
     
     func previewTheTouchedPoint(touch: UITouch) {
@@ -314,7 +323,7 @@ extension MotionViewController: DrawableImageViewDelegate {
         scissorView?.frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 24, height: 24))
         scissorView?.contentMode = .scaleAspectFit
         scissorView?.tintColor = UIColor.white
-        scissorView?.center = view.convert(location, from: drawableImageView)
+        scissorView?.center = iDontKnowItsNameView.convert(location, from: drawableImageView)
         
         if drawableImageView.pathPoints.count > 1 {
             guard let p1 = drawableImageView.pathPoints.last else { return }
@@ -330,7 +339,8 @@ extension MotionViewController: DrawableImageViewDelegate {
             
             scissorView?.transform = CGAffineTransform(rotationAngle: angle)
             
-            self.view.addSubview(scissorView!)
+            self.iDontKnowItsNameView.addSubview(scissorView!)
+            self.view.bringSubviewToFront(iDontKnowItsNameView)
         }
     }
 }
@@ -344,7 +354,7 @@ extension MotionViewController: UIScrollViewDelegate {
     func scrollViewDidZoom(_ scrollView: UIScrollView) {
         setContentInset(scrollView)
         guard let lastPoint = drawableImageView.touchPoints.last else {return}
-        scissorView?.center = view.convert(lastPoint, from: drawableImageView)
+        scissorView?.center = iDontKnowItsNameView.convert(lastPoint, from: drawableImageView)
         view.bringSubviewToFront(topContainer)
     }
     
